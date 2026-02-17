@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Min Dashboard - Sida 2</title>
+ <style>
+        /* Grundinställningar med maxbredd och centrering */
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0 auto; /* auto centrerar sidan på stora skärmar */
+            max-width: 1000px; /* Sidan blir aldrig bredare än så här */
+            padding: 20px; 
+            background-color: #f4f4f9; 
+        }
+        
+        /* Meny */
+        nav { background-color: #333; padding: 15px; border-radius: 5px; margin-bottom: 30px; }
+        nav a { color: white; text-decoration: none; margin-right: 20px; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        .map-portal-link { color: #4CAF50; }
+        
+        /* Sektioner och kommentarer */
+        .sektion { background: white; padding: 20px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .kommentar { font-style: italic; color: #555; margin-bottom: 10px; padding: 10px; background-color: #eef; border-left: 4px solid #0066cc; }
+        
+        /* Responsiva iframes */
+        iframe {
+            max-width: 100%; /* Säkerställer att iframen inte svämmar över sin box på mobiler */
+            border: none; /* Tar bort den fula standardramen */
+            border-radius: 4px; /* Mjukare hörn */
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html">Månadsstatistik</a>
+        <a href="sida2.html">Befolkning</a>
+        <a href="sida6.html">Prognos</a>
+        <a href="sida4.html">Bostäder och hushåll</a>
+        <a href="sida8.html">Nybyggnation</a>
+        
+        
+        <a href="https://lindahlen.github.io/linkoping-aikarta/" class="map-portal-link" >
+            🌍 Till min Kartportal
+        </a>
+    </nav>
+
+    <h1>Befolkningen i kommunens stadsdelar</h1>
+
+    <div class="sektion">
+        <div class="kommentar">
+            Här visas i fallande ordning folkmängd i kommunens största stadsdelar och tätorter
+            </div>
+       <!-- Embed code for 17/10 Folkmängd i stadsdelar efter kön -->
+<iframe src="https://statisticsstudio.com/boot/2.0.0/bootstrapper.html?c=652e27496605b5331c738100&o=9462b1bd-274f-4213-9cf3-9265c35093b9" frameBorder="0" seamless="true" style="width: 100%; height: 570px;"></iframe>
+ </div>
+
+    <div class="sektion">
+        <div class="kommentar">
+            Här visas befolkningsutvecklingen i kommunens stadsdelar och tätorter. Välj område i rullistan under diagrammet.
+        </div>
+        <!-- Embed code for 17/10 Folkmängdens utveckling för stadsdelarna -->
+<iframe src="https://statisticsstudio.com/boot/2.0.0/bootstrapper.html?c=652e29816605b5331c738104&o=9462b1bd-274f-4213-9cf3-9265c35093b9" frameBorder="0" seamless="true" style="width: 100%; height: 570px;"></iframe>
+    </div>
+
+    <div class="sektion">
+        <div class="kommentar">
+            Här visas i fallande ordning folkmängd respektive befolkningsförändringar för kommunens största stadsdelar och tätorter
+        </div>
+        <!-- Embed code for 1/11 Befolkningsförändringar för stadsdelar -->
+<iframe src="https://statisticsstudio.com/boot/2.0.0/bootstrapper.html?c=65422fac6605b5331c738554&o=9462b1bd-274f-4213-9cf3-9265c35093b9" frameBorder="0" seamless="true" style="width: 100%; height: 570px;"></iframe>
+    </div>
+
+    <div class="sektion">
+        <div class="kommentar">
+            Välj i rullistan under diagrammet vilka åldersgrupper som ska visas för stadsdelar resp. tätorter i den valda delen av kommunen.
+        </div>
+        <!-- Embed code for 2/12 Befolkningen i stadsdelar åldersgruppsjämförelse stapeldiagram -->
+<iframe src="https://statisticsstudio.com/boot/2.0.0/bootstrapper.html?c=674df0ceb1ac791b74298ab7&o=9462b1bd-274f-4213-9cf3-9265c35093b9" frameBorder="0" seamless="true" style="width: 100%; height: 570px;"></iframe>
+    </div>
+
+    <div class="sektion">
+        <div class="kommentar">
+            Välj stadsdel samt vilken eller vilka åldrar som information ska visas för.
+        </div>
+        <!-- Embed code for 9/12  Befolkningen efter funktionell ålder procent för stadsdelar -->
+<iframe src="https://statisticsstudio.com/boot/2.0.0/bootstrapper.html?c=6756f22db1ac791b74298b3b&o=9462b1bd-274f-4213-9cf3-9265c35093b9" frameBorder="0" seamless="true" style="width: 100%; height: 570px;"></iframe>
+    </div>
+    <div class="sektion">
+        <div class="kommentar">
+            Här visas en tabell med information om antalet invånare i respektive stadsdel/tätort.
+        </div>
+        <!-- Embed code for 20/11 Tabell befolkningsutveckling stadsdelar -->
+<iframe src="https://statisticsstudio.com/boot/2.0.0/bootstrapper.html?c=655b15846837ff2c041740b5&o=9462b1bd-274f-4213-9cf3-9265c35093b9" frameBorder="0" seamless="true" style="width: 100%; height: 800px;"></iframe>
+    </div>
+
+</body>
+</html>
