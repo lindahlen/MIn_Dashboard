@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; background-color: white;}
+        .lokal-kontroll { margin-bottom: 10px; }
+        select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; background-color: #f8f9fa; cursor: pointer; font-weight: bold; }
+        .canvas-container { width: 100%; height: 350px; }
+        #felmeddelande { color: #dc3545; font-weight: bold; text-align: center; margin-bottom: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div id="felmeddelande"></div>
+
+    <div class="lokal-kontroll">
+        <select id="indikator" onchange="uppdateraDiagram()">
+            <option value="Befolkningsförändring">Befolkningsförändring</option>
+            <option value="Födda_barn">Födda barn</option>
+            <option value="Döda">Döda</option>
+            <option value="Inflyttning">Inflyttning</option>
+            <option value="Utflyttning">Utflyttning</option>
+            <option value="Befolkning">Befolkning</option>
+        </select>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="mittDiagram"></canvas>
+    </div>
+
+    <script>
+        // ==========================================
+        // 🎨 INSTÄLLNINGAR FÖR FÄRGER OCH FIL
+        // ==========================================
+        
+        // HÄR STYR DU VILKEN FIL SOM LÄSES IN 👇
+        const csvFilnamn = "Data_Diagram1.csv"; 
+
+        // Färginställningar (Här är den blå paletten för Diagram 1)
+        const FARG_STAPEL = 'rgba(0, 123, 255, 0.6)';      // Halvgenomskinlig blå
+        const FARG_STAPEL_KANT = 'rgba(0, 123, 255, 1)';   // Skarp blå
+        const FARG_LINJE = 'rgba(0, 123, 255, 1)';         // Skarp blå
+        const FARG_PUNKTER = '#004a99';                    // Mörkare marinblå för tydliga prickar
+        
+        // ==========================================
+
+        let globalBerakning = "_Kvartal";
+        let globalGrafTyp = "linje";
+        let globalKvartal = "1";
+        let csvData = [];
+        let myChart = null;
+
+        fetch(csvFilnamn)
+            .then(response => response.arrayBuffer())
+            .then(buffer => {
+                let decoder = new TextDecoder("utf-8");
+                let text = decoder.decode(buffer);
+                
+                if (text.includes("")) {
+                    decoder = new TextDecoder("windows-1252");
+                    text = decoder.decode(buffer);
+                }
+
+                text = text.trim().replace(/^\uFEFF/i, '');
+
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    delimiter: ";",
+                    transformHeader: function(h) { return h.trim(); },
+                    complete: function(results) {
+                        csvData = results.data;
+                        if(csvData.length === 0) {
+                            document.getElementById("felmeddelande").innerText = "Filen är tom eller kunde inte läsas.";
+                        } else {
+                            uppdateraDiagram();
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                document.getElementById("felmeddelande").innerText = "Hittade inte filen: " + csvFilnamn;
+            });
+
+        window.uppdateraFranMaster = function(berakning, grafTyp, kvartal) {
+            globalBerakning = berakning; globalGrafTyp = grafTyp; globalKvartal = kvartal;
+            uppdateraDiagram(); 
+        };
+
+        function tvattaSiffra(val) {
+            if (val === undefined || val === null) return null;
+            let str = val.toString().trim();
+            if (str === ".." || str === "" || str === "-") return null;
+            str = str.replace(',', '.').replace(/\s/g, ''); 
+            let siffra = parseFloat(str);
+            return isNaN(siffra) ? null : siffra;
+        }
+
+        function uppdateraDiagram() {
+            if (csvData.length === 0) return;
+
+            const indikator = document.getElementById("indikator").value;
+            const kolumnNamn = indikator + globalBerakning; 
+            const rubrikText = document.getElementById("indikator").options[document.getElementById("indikator").selectedIndex].text;
+
+            const arKolumn = Object.keys(csvData[0])[0]; 
+            const kvartalKolumn = Object.keys(csvData[0])[1]; 
+
+            let etiketter = [];
+            let varden = [];
+
+            if (globalGrafTyp === "linje") {
+                csvData.forEach(rad => {
+                    if (rad[arKolumn] && rad[kvartalKolumn]) {
+                        etiketter.push(rad[arKolumn] + " Q" + parseInt(rad[kvartalKolumn]));
+                        varden.push(tvattaSiffra(rad[kolumnNamn]));
+                    }
+                });
+            } else {
+                csvData.forEach(rad => {
+                    if (rad[arKolumn] && parseInt(rad[kvartalKolumn]) === parseInt(globalKvartal)) {
+                        etiketter.push(rad[arKolumn]);
+                        varden.push(tvattaSiffra(rad[kolumnNamn]));
+                    }
+                });
+            }
+
+            if (varden.length === 0 || varden.every(v => v === null)) {
+                document.getElementById("felmeddelande").innerText = "Hittar inte kolumnen: " + kolumnNamn;
+            } else {
+                document.getElementById("felmeddelande").innerText = ""; 
+            }
+
+            if (myChart != null) myChart.destroy();
+
+            const ctx = document.getElementById('mittDiagram').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: globalGrafTyp === 'linje' ? 'line' : 'bar',
+                data: {
+                    labels: etiketter,
+                    datasets: [{
+                        label: rubrikText,
+                        data: varden,
+                        // --- HÄR ANVÄNDS DINA FÄRGINSTÄLLNINGAR ---
+                        backgroundColor: globalGrafTyp === 'linje' ? 'transparent' : FARG_STAPEL,
+                        borderColor: globalGrafTyp === 'linje' ? FARG_LINJE : FARG_STAPEL_KANT,
+                        pointBackgroundColor: FARG_PUNKTER,
+                        borderWidth: 2,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    spanGaps: false
+                }
+            });
+        }
+    </script>
+</body>
+</html>

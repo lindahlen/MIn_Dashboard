@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Om datan - Kvartalsuppföljning</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Toppmenyn (samma som dashboarden) */
+        .toppmeny {
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { margin: 0; font-size: 1.8em; color: #2c3e50; }
+
+        .tillbaka-knapp {
+            text-decoration: none;
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .tillbaka-knapp:hover { background-color: #0056b3; }
+
+        /* Innehållet på sidan */
+        .innehall {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .intro-text {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        /* Design för de olika sektionerna */
+        .info-kort {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border-left: 5px solid #ccc;
+        }
+
+        .info-kort h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #f4f7f6;
+            padding-bottom: 10px;
+        }
+
+        /* Färgkodade kanter som matchar dina diagram! */
+        .kort-befolkning { border-left-color: #007BFF; }
+        .kort-arbetsmarknad { border-left-color: #20c997; }
+        .kort-bostader { border-left-color: #FF851B; }
+        .kort-arbetsloshet { border-left-color: #6f42c1; }
+
+    </style>
+</head>
+<body>
+
+    <header class="toppmeny">
+        <h1>ℹ️ Om datan i Kvartalsuppföljningen</h1>
+        <a href="dashboard.html" class="tillbaka-knapp">⬅ Tillbaka till Dashboard</a>
+    </header>
+
+    <div class="innehall">
+        
+        <p class="intro-text">
+            Här hittar du bakgrundsinformation, definitioner och läsanvisningar för att på bästa sätt kunna tolka diagrammen i kvartalsuppföljningen. All data hämtas löpande från SCB.
+        </p>
+
+        <div class="info-kort kort-befolkning">
+            <h2>Diagram 1: Befolkningsutveckling</h2>
+            <p><strong>Källa:</strong> SCB (Statistiska centralbyrån).</p>
+            <p><strong>Att tänka på:</strong> Här kan du skriva in att inflyttning ofta är högre under kvartal 3 på grund av terminsstart för studenter, och hur rullande 12 månader jämnar ut dessa säsongsvariationer...</p>
+        </div>
+
+        <div class="info-kort kort-arbetsmarknad">
+            <h2>Diagram 2: Sysselsättning och Arbetsmarknad</h2>
+            <p><strong>Källa:</strong> SCB.</p>
+            <p><strong>Att tänka på:</strong> Skriv här om hur branschindelningen fungerar, eller om viss data kan ha eftersläpning...</p>
+        </div>
+
+        <div class="info-kort kort-bostader">
+            <h2>Diagram 3: Bostadsbyggande</h2>
+            <p><strong>Källa:</strong> SCB.</p>
+            <p><strong>Att tänka på:</strong> Förtydliga skillnaden mellan "Påbörjade" och "Färdigställda" bostäder, och att det ibland sker revideringar i historisk data...</p>
+        </div>
+
+        <div class="info-kort kort-arbetsloshet">
+            <h2>Diagram 4: Arbetslöshet</h2>
+            <p><strong>Källa:</strong> Arbetsförmedlingen / SCB.</p>
+            <p><strong>Att tänka på:</strong> Förklara skillnaden mellan inskrivna arbetslösa och den relativa arbetslösheten (procent), samt hur långtidsarbetslöshet definieras...</p>
+        </div>
+
+    </div>
+
+</body>
+</html>
