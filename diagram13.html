@@ -11,28 +11,25 @@
         .top-rad { display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 10px; }
         select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; background-color: #f8f9fa; cursor: pointer; font-weight: bold; }
         
-        /* Design för Trend-rutan */
-        .trend-ruta { padding: 8px 15px; border-radius: 6px; background-color: #f4f7f6; border: 1px solid #ddd; font-size: 15px; font-weight: bold; display: none; display: flex; align-items: center; }
-        .trend-pos { color: #004a99; display: flex; align-items: center; } 
-        .trend-neg { color: #a10000; display: flex; align-items: center; } 
+        .trend-ruta { padding: 8px 15px; border-radius: 6px; background-color: #f4f7f6; border: 1px solid #ddd; font-size: 15px; font-weight: bold; display: none; align-items: center; }
         
-        /* Den Nya Extra Tjocka Pilen & Bollen */
+      /* ==========================================
+           🎨 FÄRGER FÖR TEXTEN OCH BOLLEN (CSS - FÄRGBLINDSÄKER)
+           ========================================== */
+        .trend-bra { color: #009E73; display: flex; align-items: center; }     /* Blågrön (Teal) */
+        .trend-dalig { color: #D55E00; display: flex; align-items: center; }   /* Klar-orange/Röd */
+        .trend-neutral { color: #868e96; display: flex; align-items: center; } /* Grå */
+        
         .pil-boll {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 28px;          /* Gjorde bollen aningen större */
-            height: 28px;
-            border-radius: 50%;
-            color: white;
-            font-size: 20px;      /* Större pil */
-            font-weight: 900;     /* Fetstil... */
-            -webkit-text-stroke: 1.5px white; /* ...och extra ifylld färgkant! */
-            margin-right: 10px;
+            display: inline-flex; justify-content: center; align-items: center;
+            width: 28px; height: 28px; border-radius: 50%; color: white;
+            font-size: 20px; font-weight: 900; -webkit-text-stroke: 1.5px white; margin-right: 10px;
         }
-        /* Bollen får samma färg som texten (över/under prognos) */
-        .trend-pos .pil-boll { background-color: #004a99; }
-        .trend-neg .pil-boll { background-color: #a10000; }
+
+        .trend-bra .pil-boll { background-color: #009E73; }    
+        .trend-dalig .pil-boll { background-color: #D55E00; }  
+        .trend-neutral .pil-boll { background-color: #868e96; }
+        /* ========================================== */
 
         .canvas-container { width: 100%; height: 350px; }
         #felmeddelande { color: #dc3545; font-weight: bold; text-align: center; margin-bottom: 10px; font-size: 14px; }
@@ -64,13 +61,16 @@
     <script>
         const csvFilnamn = "Data_Diagram13.csv"; 
 
-        const FARG_STAPEL = 'rgba(0, 123, 255, 0.4)';      
-        const FARG_LINJE = 'rgba(0, 123, 255, 1)';         
-        const FARG_OVER_PROGNOS = '#004a99'; 
-        const FARG_UNDER_PROGNOS = '#a10000'; 
-        const FARG_SAKNAR_PROGNOS = '#6c757d'; 
+// ==========================================
+        // 🎨 FÄRGER FÖR SJÄLVA GRAFEN OCH LINJEN (FÄRGBLINDSÄKER)
+        // ==========================================
+        const FARG_BRA = '#009E73';       // Blågrön (Teal)
+        const FARG_DALIG = '#D55E00';     // Klar-orange/Röd
+        const FARG_NEUTRAL = '#868e96';   // Ren grå
+        const FARG_LINJE = 'rgba(0, 123, 255, 0.4)'; // Halvgenomskinlig blå linje
+        // ==========================================
 
-        let globalBerakning = "_R12"; // Rullande 12 är standard
+        let globalBerakning = "_R12"; 
         let globalGrafTyp = "linje";
         let globalKvartal = "1";
         let csvData = [];
@@ -109,25 +109,32 @@
             return isNaN(siffra) ? null : siffra;
         }
 
+        function beraknaTroskel(troskelRaw, jamforelseVarde) {
+            if (!troskelRaw) return 0;
+            let rawStr = troskelRaw.toString().trim();
+            if (rawStr.includes("%")) {
+                let proc = parseFloat(rawStr.replace("%", "").replace(",", ".")) / 100;
+                return isNaN(proc) ? 0 : Math.abs(jamforelseVarde * proc);
+            }
+            let absVarde = parseFloat(rawStr.replace(",", "."));
+            return isNaN(absVarde) ? 0 : absVarde;
+        }
+
         function uppdateraDiagram() {
             if (csvData.length === 0) return;
 
             const indikator = document.getElementById("indikator").value;
             const kolumnNamn = indikator + globalBerakning; 
             const prognosKolumnNamn = indikator + "_Prognos"; 
+            const polaritetKolumn = indikator + "_Polaritet";
+            const troskelKolumn = indikator + "_Troskel";
             const rubrikText = document.getElementById("indikator").options[document.getElementById("indikator").selectedIndex].text;
 
             const arKolumn = Object.keys(csvData[0])[0]; 
             const kvartalKolumn = Object.keys(csvData[0])[1]; 
 
-            let etiketter = [];
-            let varden = [];
-            let prognosVarden = [];
-            let punktFarger = []; 
-            
-            // Vi sparar undan vilket år och kvartal varje prick har för att kunna leta bakåt
-            let arLista = [];
-            let kvartalLista = [];
+            let etiketter = [], varden = [], prognosVarden = [], punktFarger = []; 
+            let arLista = [], kvartalLista = [];
 
             csvData.forEach(rad => {
                 let taMedRad = false;
@@ -136,20 +143,27 @@
 
                 if (taMedRad) {
                     etiketter.push(globalGrafTyp === "linje" ? (rad[arKolumn] + " Q" + parseInt(rad[kvartalKolumn])) : rad[arKolumn]);
-                    
                     arLista.push(parseInt(rad[arKolumn]));
                     kvartalLista.push(parseInt(rad[kvartalKolumn]));
 
                     let varde = tvattaSiffra(rad[kolumnNamn]);
                     let prognos = tvattaSiffra(rad[prognosKolumnNamn]);
-                    
                     varden.push(varde);
                     prognosVarden.push(prognos);
 
                     if (varde !== null && prognos !== null) {
-                        punktFarger.push(varde >= prognos ? FARG_OVER_PROGNOS : FARG_UNDER_PROGNOS);
+                        let diff = varde - prognos;
+                        let polaritet = rad[polaritetKolumn] ? rad[polaritetKolumn].toString().trim().toLowerCase() : "hög";
+                        let troskelAbsolut = beraknaTroskel(rad[troskelKolumn], prognos);
+
+                        if (Math.abs(diff) <= troskelAbsolut) {
+                            punktFarger.push(FARG_NEUTRAL);
+                        } else {
+                            let arBra = (polaritet === "låg") ? (diff < 0) : (diff > 0);
+                            punktFarger.push(arBra ? FARG_BRA : FARG_DALIG);
+                        }
                     } else {
-                        punktFarger.push(FARG_SAKNAR_PROGNOS); 
+                        punktFarger.push(FARG_NEUTRAL); 
                     }
                 }
             });
@@ -157,23 +171,22 @@
             let trendRuta = document.getElementById("trend-ruta");
             trendRuta.style.display = "block"; 
             
-            // 1. Hitta den sista giltiga datan (Senaste utfall)
             let lastIndex = -1;
             for(let i = varden.length - 1; i >= 0; i--) {
-                if(varden[i] !== null) {
-                    lastIndex = i;
-                    break;
-                }
+                if(varden[i] !== null) { lastIndex = i; break; }
             }
 
             if (lastIndex !== -1 && prognosVarden[lastIndex] !== null) {
                 let lastVal = varden[lastIndex];
                 let lastPrognos = prognosVarden[lastIndex];
-                let diff = lastVal - lastPrognos;
+                let diffPrognos = lastVal - lastPrognos;
                 
-                // 2. Leta fram värdet för SAMMA kvartal, FÖREGÅENDE år
+                let aktuellRad = csvData[csvData.length - 1]; 
+                let polaritet = aktuellRad[polaritetKolumn] ? aktuellRad[polaritetKolumn].toString().trim().toLowerCase() : "hög";
+                let troskelAbsolut = beraknaTroskel(aktuellRad[troskelKolumn], lastPrognos);
+
                 let prevVal = null;
-                let targetAr = arLista[lastIndex] - 1; // Backa ett år
+                let targetAr = arLista[lastIndex] - 1; 
                 let targetKvartal = kvartalLista[lastIndex];
 
                 for(let i = lastIndex - 1; i >= 0; i--) {
@@ -183,22 +196,34 @@
                     }
                 }
 
-                // 3. Räkna ut Trend (jämfört med förra året)
                 let trendPil = "→";
                 if (prevVal !== null) {
-                    if (lastVal > prevVal) trendPil = "↑";
-                    else if (lastVal < prevVal) trendPil = "↓";
+                    let diffTrend = lastVal - prevVal;
+                    let trendTroskel = beraknaTroskel(aktuellRad[troskelKolumn], prevVal); 
+                    
+                    if (Math.abs(diffTrend) <= trendTroskel) {
+                        trendPil = "→";
+                    } else if (diffTrend > 0) {
+                        trendPil = "↑";
+                    } else {
+                        trendPil = "↓";
+                    }
                 }
 
-                let diffText = Math.abs(diff).toLocaleString('sv-SE');
-                let textKlass = diff >= 0 ? "trend-pos" : "trend-neg";
-                let overUnderText = diff >= 0 ? "över" : "under";
+                let textKlass = "trend-neutral";
+                if (Math.abs(diffPrognos) > troskelAbsolut) {
+                    let arBra = (polaritet === "låg") ? (diffPrognos < 0) : (diffPrognos > 0);
+                    textKlass = arBra ? "trend-bra" : "trend-dalig";
+                }
 
-                // Rita rutan med pilen!
+                let diffText = Math.abs(diffPrognos).toLocaleString('sv-SE');
+                let overUnderText = diffPrognos >= 0 ? "över" : "under";
+                let extrainfo = Math.abs(diffPrognos) <= troskelAbsolut ? " (Inom mål)" : "";
+
                 document.getElementById("avvikelse-text").innerHTML = 
-                    `<span class="${textKlass}"><span class="pil-boll">${trendPil}</span> Ligger ${diffText} ${overUnderText} prognos</span>`;
+                    `<span class="${textKlass}"><span class="pil-boll">${trendPil}</span> Ligger ${diffText} ${overUnderText} prognos ${extrainfo}</span>`;
             } else {
-                document.getElementById("avvikelse-text").innerHTML = "<span>För lite data</span>";
+                document.getElementById("avvikelse-text").innerHTML = "<span class='trend-neutral'><span class='pil-boll'>?</span> Saknar prognos</span>";
             }
 
             if (myChart != null) myChart.destroy();
@@ -231,15 +256,8 @@
             const ctx = document.getElementById('mittDiagram').getContext('2d');
             myChart = new Chart(ctx, {
                 type: globalGrafTyp === 'linje' ? 'line' : 'bar',
-                data: {
-                    labels: etiketter,
-                    datasets: datasetsArray
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    spanGaps: false
-                }
+                data: { labels: etiketter, datasets: datasetsArray },
+                options: { responsive: true, maintainAspectRatio: false, spanGaps: false }
             });
         }
     </script>
