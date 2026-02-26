@@ -3,22 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="author" content="DITT FÖR- OCH EFTERNAMN, DIN AVDELNING">
+    <meta name="description" content="Ett interaktivt BI-system och dashboard för kvartalsuppföljning av kommungemensamma indikatorer såsom befolkning, sysselsättning, bostäder och arbetslöshet.">
+    <meta name="keywords" content="BI, Dashboard, Kvartalsuppföljning, Statistik, SCB, Befolkningsutveckling, Arbetsmarknad, Bostadsbyggande, Prognoser">
+    
     <title>Diagram 11</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; background-color: white;}
+        /* FINJUSTERADE MARGINALER FÖR PERFEKT BALANS UTAN SCROLL */
+        body { font-family: Arial, sans-serif; margin: 0; padding: 12px 15px; display: flex; flex-direction: column; align-items: center; background-color: white;}
         .top-rad { display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 10px; }
+        
         select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; background-color: #f8f9fa; cursor: pointer; font-weight: bold; }
         
         .trend-ruta { padding: 8px 15px; border-radius: 6px; background-color: #f4f7f6; border: 1px solid #ddd; font-size: 15px; font-weight: bold; display: none; align-items: center; }
         
-      /* ==========================================
-           🎨 FÄRGER FÖR TEXTEN OCH BOLLEN (CSS - FÄRGBLINDSÄKER)
-           ========================================== */
-        .trend-bra { color: #009E73; display: flex; align-items: center; }     /* Blågrön (Teal) */
-        .trend-dalig { color: #D55E00; display: flex; align-items: center; }   /* Klar-orange/Röd */
-        .trend-neutral { color: #868e96; display: flex; align-items: center; } /* Grå */
+        /* Färgklasser för texten och bollen */
+        .trend-bra { color: #009E73; display: flex; align-items: center; }     
+        .trend-dalig { color: #D55E00; display: flex; align-items: center; }   
+        .trend-neutral { color: #868e96; display: flex; align-items: center; } 
         
         .pil-boll {
             display: inline-flex; justify-content: center; align-items: center;
@@ -28,11 +33,22 @@
 
         .trend-bra .pil-boll { background-color: #009E73; }    
         .trend-dalig .pil-boll { background-color: #D55E00; }  
-        .trend-neutral .pil-boll { background-color: #868e96; }
-        /* ========================================== */
+        .trend-neutral .pil-boll { background-color: #868e96; } 
 
-        .canvas-container { width: 100%; height: 350px; }
+        /* PERFEKT HÖJD: Fyller ut rutan snyggt men undviker scrollist */
+        .canvas-container { width: 100%; height: 343px; }
         #felmeddelande { color: #dc3545; font-weight: bold; text-align: center; margin-bottom: 10px; font-size: 14px; }
+        
+        /* Design för nedladdningsknappen - Diskret grå */
+        .nedladdning-btn {
+            padding: 6px 12px; font-size: 13px; cursor: pointer; border: 1px solid #ccc; 
+            background: #f8f9fa; border-radius: 4px; font-weight: bold; color: #6c757d;
+            transition: background 0.2s, color 0.2s; display: inline-block;
+        }
+        .nedladdning-btn:hover { background: #e2e6ea; color: #495057; }
+        
+        /* Ser till att bottenraden fäster snyggt i underkant */
+        .botten-rad { width: 100%; text-align: right; margin-top: 10px; margin-bottom: 0; }
     </style>
 </head>
 <body>
@@ -40,7 +56,7 @@
     <div id="felmeddelande"></div>
 
     <div class="top-rad">
-            <select id="indikator" onchange="uppdateraDiagram()">
+        <select id="indikator" onchange="uppdateraDiagram()">
             <option value="Färdigställda_bostäder">Färdigställda bostäder</option>
             <option value="Färdigställda_småhus">Färdigställda småhus</option>
             <option value="Färdigställda_flerbostadshus">Färdigställda bostäder</option>
@@ -58,16 +74,24 @@
         <canvas id="mittDiagram"></canvas>
     </div>
 
+    <div class="botten-rad">
+        <button class="nedladdning-btn" onclick="laddaNerCSV()">📥 Ladda ner data (.csv)</button>
+    </div>
+
     <script>
         const csvFilnamn = "Data_Diagram13.csv"; 
 
-// ==========================================
-        // 🎨 FÄRGER FÖR SJÄLVA GRAFEN OCH LINJEN (FÄRGBLINDSÄKER)
         // ==========================================
-        const FARG_BRA = '#009E73';       // Blågrön (Teal)
-        const FARG_DALIG = '#D55E00';     // Klar-orange/Röd
-        const FARG_NEUTRAL = '#CED4DA';   // Ljust grå
-        const FARG_LINJE = 'rgba(0, 123, 255, 0.4)'; // Halvgenomskinlig blå linje
+        // 🎨 FÄRGER FÖR GRAFEN OCH LINJEN (DIAGRAM 13 - Bostäder / Varm Orange)
+        // ==========================================
+        const FARG_BRA = '#009E73';             
+        const FARG_DALIG = '#D55E00';           
+        const FARG_NEUTRAL_PUNKT = '#CED4DA';        
+        const FARG_NEUTRAL_STAPEL = '#868e96';       
+        
+        // Unika färger för detta diagram (används vid Aktuellt Kvartal)
+        const FARG_AKTUELLT_LINJE_PUNKT = '#b85400'; 
+        const FARG_LINJE = 'rgba(255, 133, 27, 0.4)'; 
         // ==========================================
 
         let globalBerakning = "_R12"; 
@@ -75,6 +99,7 @@
         let globalKvartal = "1";
         let csvData = [];
         let myChart = null;
+        let dataForNedladdning = ""; 
 
         fetch(csvFilnamn)
             .then(response => response.arrayBuffer())
@@ -120,6 +145,17 @@
             return isNaN(absVarde) ? 0 : absVarde;
         }
 
+        window.laddaNerCSV = function() {
+            if (!dataForNedladdning) return;
+            let encodedUri = encodeURI(dataForNedladdning);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Export_${document.getElementById("indikator").value}${globalBerakning}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
         function uppdateraDiagram() {
             if (csvData.length === 0) return;
 
@@ -136,35 +172,73 @@
             let etiketter = [], varden = [], prognosVarden = [], punktFarger = []; 
             let arLista = [], kvartalLista = [];
 
+            dataForNedladdning = "data:text/csv;charset=utf-8,\uFEFF";
+            dataForNedladdning += globalBerakning === "_R12" ? "Tidpunkt;Utfall;Prognos\n" : "Tidpunkt;Utfall\n";
+
             csvData.forEach(rad => {
                 let taMedRad = false;
                 if (globalGrafTyp === "linje" && rad[arKolumn] && rad[kvartalKolumn]) { taMedRad = true; } 
                 else if (globalGrafTyp !== "linje" && rad[arKolumn] && parseInt(rad[kvartalKolumn]) === parseInt(globalKvartal)) { taMedRad = true; }
 
                 if (taMedRad) {
-                    etiketter.push(globalGrafTyp === "linje" ? (rad[arKolumn] + " Q" + parseInt(rad[kvartalKolumn])) : rad[arKolumn]);
+                    let tidpunkt = globalGrafTyp === "linje" ? (rad[arKolumn] + " Q" + parseInt(rad[kvartalKolumn])) : rad[arKolumn];
+                    etiketter.push(tidpunkt);
                     arLista.push(parseInt(rad[arKolumn]));
                     kvartalLista.push(parseInt(rad[kvartalKolumn]));
 
                     let varde = tvattaSiffra(rad[kolumnNamn]);
-                    let prognos = tvattaSiffra(rad[prognosKolumnNamn]);
+                    let prognos = globalBerakning === "_R12" ? tvattaSiffra(rad[prognosKolumnNamn]) : null;
+                    
                     varden.push(varde);
                     prognosVarden.push(prognos);
 
-                    if (varde !== null && prognos !== null) {
-                        let diff = varde - prognos;
-                        let polaritet = rad[polaritetKolumn] ? rad[polaritetKolumn].toString().trim().toLowerCase() : "hög";
-                        let troskelAbsolut = beraknaTroskel(rad[troskelKolumn], prognos);
+                    let drawColor = FARG_NEUTRAL_PUNKT;
 
-                        if (Math.abs(diff) <= troskelAbsolut) {
-                            punktFarger.push(FARG_NEUTRAL);
+                    if (globalGrafTyp === "stapel") {
+                        let vardeForFarg = (globalBerakning === "_R12") ? varde : tvattaSiffra(rad[indikator + "_R12"]);
+                        let prognosForFarg = tvattaSiffra(rad[prognosKolumnNamn]);
+
+                        if (vardeForFarg !== null && prognosForFarg !== null) {
+                            let diff = vardeForFarg - prognosForFarg;
+                            let polaritet = rad[polaritetKolumn] ? rad[polaritetKolumn].toString().trim().toLowerCase() : "hög";
+                            let troskelAbsolut = beraknaTroskel(rad[troskelKolumn], prognosForFarg);
+
+                            if (Math.abs(diff) <= troskelAbsolut) {
+                                drawColor = FARG_NEUTRAL_STAPEL; 
+                            } else {
+                                let arBra = (polaritet === "låg") ? (diff < 0) : (diff > 0);
+                                drawColor = arBra ? FARG_BRA : FARG_DALIG;
+                            }
                         } else {
-                            let arBra = (polaritet === "låg") ? (diff < 0) : (diff > 0);
-                            punktFarger.push(arBra ? FARG_BRA : FARG_DALIG);
+                            drawColor = FARG_NEUTRAL_STAPEL;
                         }
                     } else {
-                        punktFarger.push(FARG_NEUTRAL); 
+                        if (globalBerakning === "_R12") {
+                            if (varde !== null && prognos !== null) {
+                                let diff = varde - prognos;
+                                let polaritet = rad[polaritetKolumn] ? rad[polaritetKolumn].toString().trim().toLowerCase() : "hög";
+                                let troskelAbsolut = beraknaTroskel(rad[troskelKolumn], prognos);
+
+                                if (Math.abs(diff) <= troskelAbsolut) {
+                                    drawColor = FARG_NEUTRAL_PUNKT; 
+                                } else {
+                                    let arBra = (polaritet === "låg") ? (diff < 0) : (diff > 0);
+                                    drawColor = arBra ? FARG_BRA : FARG_DALIG;
+                                }
+                            } else {
+                                drawColor = FARG_NEUTRAL_PUNKT; 
+                            }
+                        } else {
+                            // Här används temafärgen för Aktuellt Kvartal Linje!
+                            drawColor = FARG_AKTUELLT_LINJE_PUNKT;
+                        }
                     }
+
+                    punktFarger.push(drawColor);
+
+                    let csvVarde = varde !== null ? varde : "";
+                    let csvPrognos = prognos !== null ? prognos : "";
+                    dataForNedladdning += globalBerakning === "_R12" ? `${tidpunkt};${csvVarde};${csvPrognos}\n` : `${tidpunkt};${csvVarde}\n`;
                 }
             });
 
@@ -176,18 +250,22 @@
                 if(varden[i] !== null) { lastIndex = i; break; }
             }
 
-            if (lastIndex !== -1 && prognosVarden[lastIndex] !== null) {
+            if (lastIndex !== -1) {
                 let lastVal = varden[lastIndex];
                 let lastPrognos = prognosVarden[lastIndex];
-                let diffPrognos = lastVal - lastPrognos;
                 
                 let aktuellRad = csvData[csvData.length - 1]; 
-                let polaritet = aktuellRad[polaritetKolumn] ? aktuellRad[polaritetKolumn].toString().trim().toLowerCase() : "hög";
-                let troskelAbsolut = beraknaTroskel(aktuellRad[troskelKolumn], lastPrognos);
-
+                
                 let prevVal = null;
-                let targetAr = arLista[lastIndex] - 1; 
-                let targetKvartal = kvartalLista[lastIndex];
+                let targetAr, targetKvartal;
+                
+                if (globalBerakning === "_R12" || globalGrafTyp === "stapel") {
+                    targetAr = arLista[lastIndex] - 1; 
+                    targetKvartal = kvartalLista[lastIndex];
+                } else {
+                    targetAr = kvartalLista[lastIndex] === 1 ? arLista[lastIndex] - 1 : arLista[lastIndex];
+                    targetKvartal = kvartalLista[lastIndex] === 1 ? 4 : kvartalLista[lastIndex] - 1;
+                }
 
                 for(let i = lastIndex - 1; i >= 0; i--) {
                     if (arLista[i] === targetAr && kvartalLista[i] === targetKvartal && varden[i] !== null) {
@@ -199,31 +277,38 @@
                 let trendPil = "→";
                 if (prevVal !== null) {
                     let diffTrend = lastVal - prevVal;
-                    let trendTroskel = beraknaTroskel(aktuellRad[troskelKolumn], prevVal); 
+                    let trendTroskel = (globalBerakning === "_R12") ? beraknaTroskel(aktuellRad[troskelKolumn], prevVal) : 0; 
                     
-                    if (Math.abs(diffTrend) <= trendTroskel) {
-                        trendPil = "→";
-                    } else if (diffTrend > 0) {
-                        trendPil = "↑";
-                    } else {
-                        trendPil = "↓";
+                    if (Math.abs(diffTrend) <= trendTroskel) { trendPil = "→"; } 
+                    else if (diffTrend > 0) { trendPil = "↑"; } 
+                    else { trendPil = "↓"; }
+                }
+
+                if (globalBerakning === "_R12" && lastPrognos !== null) {
+                    let diffPrognos = lastVal - lastPrognos;
+                    let polaritet = aktuellRad[polaritetKolumn] ? aktuellRad[polaritetKolumn].toString().trim().toLowerCase() : "hög";
+                    let troskelAbsolut = beraknaTroskel(aktuellRad[troskelKolumn], lastPrognos);
+
+                    let textKlass = "trend-neutral";
+                    if (Math.abs(diffPrognos) > troskelAbsolut) {
+                        let arBra = (polaritet === "låg") ? (diffPrognos < 0) : (diffPrognos > 0);
+                        textKlass = arBra ? "trend-bra" : "trend-dalig";
                     }
+
+                    let diffText = Math.abs(diffPrognos).toLocaleString('sv-SE');
+                    let overUnderText = diffPrognos >= 0 ? "över" : "under";
+                    let extrainfo = Math.abs(diffPrognos) <= troskelAbsolut ? " (Inom mål)" : "";
+
+                    document.getElementById("avvikelse-text").innerHTML = 
+                        `<span class="${textKlass}"><span class="pil-boll">${trendPil}</span> Ligger ${diffText} ${overUnderText} prognos ${extrainfo}</span>`;
+                } else {
+                    let formateratVarde = lastVal.toLocaleString('sv-SE');
+                    document.getElementById("avvikelse-text").innerHTML = 
+                        `<span class="trend-neutral"><span class="pil-boll">${trendPil}</span> ${formateratVarde}</span>`;
                 }
 
-                let textKlass = "trend-neutral";
-                if (Math.abs(diffPrognos) > troskelAbsolut) {
-                    let arBra = (polaritet === "låg") ? (diffPrognos < 0) : (diffPrognos > 0);
-                    textKlass = arBra ? "trend-bra" : "trend-dalig";
-                }
-
-                let diffText = Math.abs(diffPrognos).toLocaleString('sv-SE');
-                let overUnderText = diffPrognos >= 0 ? "över" : "under";
-                let extrainfo = Math.abs(diffPrognos) <= troskelAbsolut ? " (Inom mål)" : "";
-
-                document.getElementById("avvikelse-text").innerHTML = 
-                    `<span class="${textKlass}"><span class="pil-boll">${trendPil}</span> Ligger ${diffText} ${overUnderText} prognos ${extrainfo}</span>`;
             } else {
-                document.getElementById("avvikelse-text").innerHTML = "<span class='trend-neutral'><span class='pil-boll'>?</span> Saknar prognos</span>";
+                document.getElementById("avvikelse-text").innerHTML = "<span class='trend-neutral'><span class='pil-boll'>?</span> Saknar data</span>";
             }
 
             if (myChart != null) myChart.destroy();
@@ -240,7 +325,7 @@
                 tension: 0.1
             }];
 
-            if (globalGrafTyp === "linje") {
+            if (globalGrafTyp === "linje" && globalBerakning === "_R12") {
                 datasetsArray.push({
                     label: "Prognos",
                     data: prognosVarden,

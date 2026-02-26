@@ -1,9 +1,14 @@
-targetA<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sv">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kvartalsuppföljning - EXPERIMENT</title>
+    
+    <meta name="author" content="Jimmy Lindahl, Analys & Utredning, Linköpings kommun">
+    <meta name="description" content="Ett interaktivt BI-system och dashboard för kvartalsuppföljning av kommungemensamma indikatorer såsom befolkning, sysselsättning, bostäder och arbetslöshet, inklusive jämförelser med prognoser.">
+    <meta name="keywords" content="BI, Dashboard, Data, Fakta, Kvartal, Kvartalsuppföljning, Statistik, Linköping, Befolkningsutveckling, Arbetsmarknad, Bostadsbyggande, Prognoser">
+    
+    <title>Kvartalsuppföljning för Linköpings kommun - EXPERIMENT</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; color: #333; }
@@ -46,7 +51,7 @@ targetA<!DOCTYPE html>
 
         <div class="master-kontroller">
             <select id="master-berakning" onchange="skickaTillDiagrammen()">
-                <option value="_Kvartal">Aktuellt Kvartal</option>
+                <option value="_Kvartal">Aktuellt kvartal</option>
                 <option value="_R12" selected>Rullande 12 mån</option>
             </select>
             <select id="master-graftyp" onchange="skickaTillDiagrammen()">
