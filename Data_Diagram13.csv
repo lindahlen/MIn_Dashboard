@@ -1,8 +1,8 @@
 År;Kvartal;Färdigställda_bostäder_Kvartal;Färdigställda_bostäder_R12;Färdigställda_bostäder_Prognos;Färdigställda_bostäder_Polaritet;Färdigställda_bostäder_Troskel;Färdigställda_småhus_Kvartal;Färdigställda_småhus_R12;Färdigställda_småhus_Prognos;Färdigställda_småhus_Polaritet;Färdigställda_småhus_Troskel;Färdigställda_flerbostadshus_Kvartal;Färdigställda_flerbostadshus_R12;Färdigställda_flerbostadshus_Prognos;Färdigställda_flerbostadshus_Polaritet;Färdigställda_flerbostadshus_Troskel;Påbörjade_bostäder_Kvartal;Påbörjade_bostäder_R12;Påbörjade_bostäder_Prognos;Påbörjade_bostäder_Polaritet;Påbörjade_bostäder_Troskel;Påbörjade_småhus_Kvartal;Påbörjade_småhus_R12;Påbörjade_småhus_Prognos;Påbörjade_småhus_Polaritet;Påbörjade_småhus_Troskel;Påbörjade_flerbostadshus_Kvartal;Påbörjade_flerbostadshus_R12;Påbörjade_flerbostadshus_Prognos;Påbörjade_flerbostadshus_Polaritet;Påbörjade_flerbostadshus_Troskel
-2020;1;543;1341;..;Hög;200;29;116;..;Hög;50;514;1225;..;Hög;125;87;1040;..;Hög;200;43;172;..;Hög;50;44;868;..;Hög;125
-2020;2;345;1447;..;Hög;200;29;108;..;Hög;50;316;1339;..;Hög;125;450;1276;..;Hög;200;37;177;..;Hög;50;413;1099;..;Hög;125
-2020;3;204;1341;..;Hög;200;46;135;..;Hög;50;158;1206;..;Hög;125;133;921;..;Hög;200;27;156;..;Hög;50;106;765;..;Hög;125
-2020;4;423;1515;..;Hög;200;58;162;..;Hög;50;365;1353;..;Hög;125;84;754;..;Hög;200;37;144;..;Hög;50;47;610;..;Hög;125
+2020;1;543;1341;1021;Hög;200;29;116;288;Hög;50;514;1225;733;Hög;125;87;1040;788;Hög;200;43;172;133;Hög;50;44;868;655;Hög;125
+2020;2;345;1447;963;Hög;200;29;108;175;Hög;50;316;1339;788;Hög;125;450;1276;666;Hög;200;37;177;122;Hög;50;413;1099;544;Hög;125
+2020;3;204;1341;1127;Hög;200;46;135;163;Hög;50;158;1206;964;Hög;125;133;921;1124;Hög;200;27;156;146;Hög;50;106;765;978;Hög;125
+2020;4;423;1515;896;Hög;200;58;162;118;Hög;50;365;1353;778;Hög;125;84;754;1177;Hög;200;37;144;170;Hög;50;47;610;1007;Hög;125
 2021;1;255;1227;1341;Hög;200;32;165;116;Hög;50;223;1062;1225;Hög;125;320;987;1040;Hög;200;28;129;172;Hög;50;292;858;868;Hög;125
 2021;2;403;1285;1447;Hög;200;29;165;108;Hög;50;374;1120;1339;Hög;125;466;1003;1276;Hög;200;89;181;177;Hög;50;377;822;1099;Hög;125
 2021;3;80;1161;1341;Hög;200;25;144;135;Hög;50;55;1017;1206;Hög;125;156;1026;921;Hög;200;50;204;156;Hög;50;106;822;765;Hög;125
