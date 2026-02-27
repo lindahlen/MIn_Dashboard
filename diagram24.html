@@ -145,15 +145,58 @@
             let ds = [{ label: rubrikText + " (Utfall)", data: varden, backgroundColor: globalGrafTyp === 'linje' ? 'transparent' : pFargerBG, borderColor: globalGrafTyp === 'linje' ? FARG_LINJE : pFargerBorder, pointBackgroundColor: pFargerBG, pointBorderColor: pFargerBorder, pointRadius: 6, borderWidth: 2, tension: 0.1, yAxisID: 'y' }];
             if (globalGrafTyp === "linje" && globalBerakning === "_R12") ds.push({ label: "Prognos", data: prognosVarden, backgroundColor: 'transparent', borderColor: '#6c757d', borderDash: [5, 5], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y' });
             
-            let scalesConfig = { x: { grid: { display: false } }, y: { type: 'linear', display: true, position: 'left' } };
+            // LÖSNING 1: Stapel börjar på noll, linjer auto-skalar för att visa variationer
+            let startaPaNoll = (globalGrafTyp === "stapel");
+            
+            let scalesConfig = { 
+                x: { grid: { display: false } }, 
+                y: { type: 'linear', display: true, position: 'left', beginAtZero: startaPaNoll } 
+            };
 
             if (visaRiket && riketDataFinns) {
                 bottenInfoElement.innerHTML = `<em>* Rikets värden visas på den högra axeln</em>`;
-                scalesConfig.y1 = { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: FARG_RIKET } };
+                
+                scalesConfig.y1 = { 
+                    type: 'linear', display: true, position: 'right', 
+                    grid: { drawOnChartArea: false }, ticks: { color: FARG_RIKET }, 
+                    beginAtZero: startaPaNoll 
+                };
+
+                // LÖSNING 2: FIX FÖR NEGATIVA VÄRDEN (ENDAST OM ORDET "FÖRÄNDRING" FINNS)
+                let arForandringIndikator = indikator.toLowerCase().includes("förändring");
+                let hasNegative = varden.some(v => v !== null && v < 0) || 
+                                  prognosVarden.some(v => v !== null && v < 0) || 
+                                  riketVarden.some(v => v !== null && v < 0);
+
+                if (arForandringIndikator && hasNegative) {
+                    function snyggMax(val) {
+                        if (val === 0) return 10;
+                        let mag = Math.pow(10, Math.floor(Math.log10(val)) - 1);
+                        if (mag === 0) mag = 1;
+                        return Math.ceil((val * 1.1) / mag) * mag; 
+                    }
+                    
+                    let maxL = Math.max(0, ...varden.filter(v => v !== null).map(Math.abs), ...prognosVarden.filter(v => v !== null).map(Math.abs));
+                    let maxR = Math.max(0, ...riketVarden.filter(v => v !== null).map(Math.abs));
+                    
+                    let symMaxL = snyggMax(maxL);
+                    let symMaxR = snyggMax(maxR);
+
+                    scalesConfig.y.min = -symMaxL;
+                    scalesConfig.y.max = symMaxL;
+                    scalesConfig.y1.min = -symMaxR;
+                    scalesConfig.y1.max = symMaxR;
+                }
+                // ===================================================
+
                 ds.push({ label: "Riket", data: riketVarden, backgroundColor: 'transparent', borderColor: FARG_RIKET, borderDash: [2, 2], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y1' });
             } else { bottenInfoElement.innerHTML = ""; }
 
-            myChart = new Chart(document.getElementById('mittDiagram').getContext('2d'), { type: globalGrafTyp === 'linje' ? 'line' : 'bar', data: { labels: etiketter, datasets: ds }, options: { responsive: true, maintainAspectRatio: false, spanGaps: false, plugins: { legend: { position: 'bottom' } }, scales: scalesConfig } });
+            myChart = new Chart(document.getElementById('mittDiagram').getContext('2d'), { 
+                type: globalGrafTyp === 'linje' ? 'line' : 'bar', 
+                data: { labels: etiketter, datasets: ds }, 
+                options: { responsive: true, maintainAspectRatio: false, spanGaps: false, plugins: { legend: { position: 'bottom' } }, scales: scalesConfig } 
+            });
         }
     </script>
 </body>

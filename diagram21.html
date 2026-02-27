@@ -145,10 +145,12 @@
             let ds = [{ label: rubrikText + " (Utfall)", data: varden, backgroundColor: globalGrafTyp === 'linje' ? 'transparent' : pFargerBG, borderColor: globalGrafTyp === 'linje' ? FARG_LINJE : pFargerBorder, pointBackgroundColor: pFargerBG, pointBorderColor: pFargerBorder, pointRadius: 6, borderWidth: 2, tension: 0.1, yAxisID: 'y' }];
             if (globalGrafTyp === "linje" && globalBerakning === "_R12") ds.push({ label: "Prognos", data: prognosVarden, backgroundColor: 'transparent', borderColor: '#6c757d', borderDash: [5, 5], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y' });
             
-            // Grundinställning för axlar: Starta alltid på 0 om alla siffror är positiva
+            // LÖSNING 1: Stapel börjar på noll, linjer auto-skalar för att visa variationer
+            let startaPaNoll = (globalGrafTyp === "stapel");
+            
             let scalesConfig = { 
                 x: { grid: { display: false } }, 
-                y: { type: 'linear', display: true, position: 'left', beginAtZero: true } 
+                y: { type: 'linear', display: true, position: 'left', beginAtZero: startaPaNoll } 
             };
 
             if (visaRiket && riketDataFinns) {
@@ -157,17 +159,16 @@
                 scalesConfig.y1 = { 
                     type: 'linear', display: true, position: 'right', 
                     grid: { drawOnChartArea: false }, ticks: { color: FARG_RIKET }, 
-                    beginAtZero: true 
+                    beginAtZero: startaPaNoll 
                 };
 
-                // ==== FIX FÖR NEGATIVA VÄRDEN OCH OLIKA SKALOR ====
-                // Kontrollera om det finns NÅGRA negativa värden i kommunen, prognosen eller riket
+                // LÖSNING 2: FIX FÖR NEGATIVA VÄRDEN (ENDAST OM ORDET "FÖRÄNDRING" FINNS)
+                let arForandringIndikator = indikator.toLowerCase().includes("förändring");
                 let hasNegative = varden.some(v => v !== null && v < 0) || 
                                   prognosVarden.some(v => v !== null && v < 0) || 
                                   riketVarden.some(v => v !== null && v < 0);
 
-                if (hasNegative) {
-                    // Funktion för att runda upp maxvärdet till ett snyggt tal (t.ex. 100, 500, 5000)
+                if (arForandringIndikator && hasNegative) {
                     function snyggMax(val) {
                         if (val === 0) return 10;
                         let mag = Math.pow(10, Math.floor(Math.log10(val)) - 1);
@@ -175,14 +176,12 @@
                         return Math.ceil((val * 1.1) / mag) * mag; 
                     }
                     
-                    // Hitta högsta absoluta värdet för vänster (kommun) och höger (riket) axel
                     let maxL = Math.max(0, ...varden.filter(v => v !== null).map(Math.abs), ...prognosVarden.filter(v => v !== null).map(Math.abs));
                     let maxR = Math.max(0, ...riketVarden.filter(v => v !== null).map(Math.abs));
                     
                     let symMaxL = snyggMax(maxL);
                     let symMaxR = snyggMax(maxR);
 
-                    // Tvinga axlarna att vara symmetriska kring 0 (t.ex. från -5000 till +5000)
                     scalesConfig.y.min = -symMaxL;
                     scalesConfig.y.max = symMaxL;
                     scalesConfig.y1.min = -symMaxR;
@@ -190,7 +189,6 @@
                 }
                 // ===================================================
 
-                // Ändrad etikett här!
                 ds.push({ label: "Riket", data: riketVarden, backgroundColor: 'transparent', borderColor: FARG_RIKET, borderDash: [2, 2], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y1' });
             } else { bottenInfoElement.innerHTML = ""; }
 
