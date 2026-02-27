@@ -150,7 +150,7 @@
             if (visaRiket && riketDataFinns) {
                 bottenInfoElement.innerHTML = `<em>* Rikets värden visas på den högra axeln</em>`;
                 scalesConfig.y1 = { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: FARG_RIKET } };
-                ds.push({ label: "Riket (Snitt)", data: riketVarden, backgroundColor: 'transparent', borderColor: FARG_RIKET, borderDash: [2, 2], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y1' });
+                ds.push({ label: "Riket", data: riketVarden, backgroundColor: 'transparent', borderColor: FARG_RIKET, borderDash: [2, 2], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y1' });
             } else { bottenInfoElement.innerHTML = ""; }
 
             myChart = new Chart(document.getElementById('mittDiagram').getContext('2d'), { type: globalGrafTyp === 'linje' ? 'line' : 'bar', data: { labels: etiketter, datasets: ds }, options: { responsive: true, maintainAspectRatio: false, spanGaps: false, plugins: { legend: { position: 'bottom' } }, scales: scalesConfig } });

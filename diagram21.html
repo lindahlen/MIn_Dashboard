@@ -17,18 +17,17 @@
         
         .trend-bra { color: #009E73; display: flex; align-items: center; }     
         .trend-dalig { color: #D55E00; display: flex; align-items: center; }   
-        /* UPPDATERAD: Mörkare grå för text och ikon för bättre läsbarhet */
         .trend-neutral { color: #6c757d; display: flex; align-items: center; } 
         
         .pil-boll { display: inline-flex; justify-content: center; align-items: center; width: 28px; height: 28px; border-radius: 50%; color: white; font-size: 20px; font-weight: 900; -webkit-text-stroke: 1.5px white; margin-right: 10px; }
         .trend-bra .pil-boll { background-color: #009E73; }    
         .trend-dalig .pil-boll { background-color: #D55E00; }  
-        /* UPPDATERAD: Mörkare grå för bollen */
         .trend-neutral .pil-boll { background-color: #6c757d; } 
         
         .canvas-container { width: 100%; height: 343px; }
         #felmeddelande { color: #dc3545; font-weight: bold; text-align: center; margin-bottom: 8px; font-size: 14px; }
         
+        /* Flexbox för att hålla info och knapp på samma rad */
         .botten-rad { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
         .botten-info { font-size: 12px; color: #6c757d; font-style: italic; }
         .nedladdning-btn { margin-left: auto; padding: 6px 12px; font-size: 13px; cursor: pointer; border: 1px solid #ccc; background: #f8f9fa; border-radius: 4px; font-weight: bold; color: #6c757d; transition: background 0.2s, color 0.2s; display: inline-block; }
@@ -63,8 +62,8 @@
 
         const FARG_BRA = '#009E73';             
         const FARG_DALIG = '#D55E00';           
-        const FARG_NEUTRAL_PUNKT = '#CED4DA'; // Fortsatt mycket ljus grå för punkter
-        const FARG_NEUTRAL_TEXT_STAPEL = '#6c757d'; // Mörkare grå för staplar och text
+        const FARG_NEUTRAL_PUNKT = '#CED4DA'; 
+        const FARG_NEUTRAL_TEXT_STAPEL = '#6c757d'; 
         const FARG_RIKET = '#495057';
 
         // Tema: KLASSISKT BLÅ
@@ -143,30 +142,56 @@
             let riketDataFinns = riketVarden.some(v => v !== null);
 
             if (myChart != null) myChart.destroy();
+            let ds = [{ label: rubrikText + " (Utfall)", data: varden, backgroundColor: globalGrafTyp === 'linje' ? 'transparent' : pFargerBG, borderColor: globalGrafTyp === 'linje' ? FARG_LINJE : pFargerBorder, pointBackgroundColor: pFargerBG, pointBorderColor: pFargerBorder, pointRadius: 6, borderWidth: 2, tension: 0.1, yAxisID: 'y' }];
+            if (globalGrafTyp === "linje" && globalBerakning === "_R12") ds.push({ label: "Prognos", data: prognosVarden, backgroundColor: 'transparent', borderColor: '#6c757d', borderDash: [5, 5], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y' });
             
-            let ds = [{ 
-                label: rubrikText + " (Utfall)", 
-                data: varden, 
-                backgroundColor: globalGrafTyp === 'linje' ? 'transparent' : pFargerBG, 
-                borderColor: globalGrafTyp === 'linje' ? FARG_LINJE : pFargerBorder, 
-                pointBackgroundColor: pFargerBG, 
-                pointBorderColor: pFargerBorder, 
-                pointRadius: 6, borderWidth: 2, tension: 0.1, yAxisID: 'y'
-            }];
-            
-            if (globalGrafTyp === "linje" && globalBerakning === "_R12") {
-                ds.push({ 
-                    label: "Prognos", data: prognosVarden, backgroundColor: 'transparent', borderColor: '#6c757d', 
-                    borderDash: [5, 5], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y'
-                });
-            }
-
-            let scalesConfig = { x: { grid: { display: false } }, y: { type: 'linear', display: true, position: 'left' } };
+            // Grundinställning för axlar: Starta alltid på 0 om alla siffror är positiva
+            let scalesConfig = { 
+                x: { grid: { display: false } }, 
+                y: { type: 'linear', display: true, position: 'left', beginAtZero: true } 
+            };
 
             if (visaRiket && riketDataFinns) {
                 bottenInfoElement.innerHTML = `<em>* Rikets värden visas på den högra axeln</em>`;
-                scalesConfig.y1 = { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: FARG_RIKET } };
-                ds.push({ label: "Riket (Snitt)", data: riketVarden, backgroundColor: 'transparent', borderColor: FARG_RIKET, borderDash: [2, 2], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y1' });
+                
+                scalesConfig.y1 = { 
+                    type: 'linear', display: true, position: 'right', 
+                    grid: { drawOnChartArea: false }, ticks: { color: FARG_RIKET }, 
+                    beginAtZero: true 
+                };
+
+                // ==== FIX FÖR NEGATIVA VÄRDEN OCH OLIKA SKALOR ====
+                // Kontrollera om det finns NÅGRA negativa värden i kommunen, prognosen eller riket
+                let hasNegative = varden.some(v => v !== null && v < 0) || 
+                                  prognosVarden.some(v => v !== null && v < 0) || 
+                                  riketVarden.some(v => v !== null && v < 0);
+
+                if (hasNegative) {
+                    // Funktion för att runda upp maxvärdet till ett snyggt tal (t.ex. 100, 500, 5000)
+                    function snyggMax(val) {
+                        if (val === 0) return 10;
+                        let mag = Math.pow(10, Math.floor(Math.log10(val)) - 1);
+                        if (mag === 0) mag = 1;
+                        return Math.ceil((val * 1.1) / mag) * mag; 
+                    }
+                    
+                    // Hitta högsta absoluta värdet för vänster (kommun) och höger (riket) axel
+                    let maxL = Math.max(0, ...varden.filter(v => v !== null).map(Math.abs), ...prognosVarden.filter(v => v !== null).map(Math.abs));
+                    let maxR = Math.max(0, ...riketVarden.filter(v => v !== null).map(Math.abs));
+                    
+                    let symMaxL = snyggMax(maxL);
+                    let symMaxR = snyggMax(maxR);
+
+                    // Tvinga axlarna att vara symmetriska kring 0 (t.ex. från -5000 till +5000)
+                    scalesConfig.y.min = -symMaxL;
+                    scalesConfig.y.max = symMaxL;
+                    scalesConfig.y1.min = -symMaxR;
+                    scalesConfig.y1.max = symMaxR;
+                }
+                // ===================================================
+
+                // Ändrad etikett här!
+                ds.push({ label: "Riket", data: riketVarden, backgroundColor: 'transparent', borderColor: FARG_RIKET, borderDash: [2, 2], pointRadius: 0, borderWidth: 2, tension: 0.1, yAxisID: 'y1' });
             } else { bottenInfoElement.innerHTML = ""; }
 
             myChart = new Chart(document.getElementById('mittDiagram').getContext('2d'), { 
